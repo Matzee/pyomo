@@ -52,12 +52,16 @@ from pyomo.pysp.util.misc import (launch_command,
                                   load_extensions)
 import pyomo.pysp.phsolverserverutils
 
-from pyomo.pysp.benderinit import benderinit
 
 #
 # utility method to construct an option parser for ph arguments,
 # to be supplied as an argument to the runph method.
 #
+
+
+def benderinit(options, scenario_tree):
+    bender = BenderAlgorithmBuilder(options, scenario_tree)
+    pass
 
 # #todo currently a copy
 def GenerateScenarioTreeForBenders(options,
@@ -302,7 +306,7 @@ def BenderAlgorithmBuilder(options, scenario_tree):
                              "type="+options.solver_manager_type+
                          " specified in call to PH constructor")
 
-        ph = ProgressiveHedging(options)
+        ph = BendersAlgorithm(options)
 
         if isinstance(solver_manager,
                       pyomo.solvers.plugins.smanager.phpyro.SolverManager_PHPyro):
@@ -357,16 +361,6 @@ def BenderFromScratch(options):
     start_time = time.time()
     if options.verbose:
         print("Importing model and scenario tree files")
-
-    scenario_instance_factory = \
-        ScenarioTreeInstanceFactory(options.model_directory,
-                                    options.instance_directory)
-
-    if options.verbose or options.output_times:
-        print("Time to import model and scenario tree "
-              "structure files=%.2f seconds"
-              %(time.time() - start_time))
-
     try:
 
         scenario_tree = \
@@ -380,7 +374,7 @@ def BenderFromScratch(options):
 
     ph = None
     try:
-        ph = BenderAlgorithmBuilder(options, scenario_tree)
+        bender = BenderAlgorithmBuilder(options, scenario_tree)
     except:
 
         print("A failure occurred in PHAlgorithmBuilder. Cleaning up...")
@@ -390,5 +384,3 @@ def BenderFromScratch(options):
         raise
 
     return ph
-
-#
